@@ -47,10 +47,21 @@ export async function fetchAndStore(
   const rawMetrics = await fetchSearchMetrics(siteUrl, startDate, endDate);
 
   const metrics = rawMetrics
-    .filter((row) => row.date && row.page) // filter out invalid ones
+    .filter(
+      (
+        row
+      ): row is {
+        date: string;
+        page: string;
+        clicks: number | null | undefined;
+        impressions: number | null | undefined;
+        ctr: number | null | undefined;
+        position: number | null | undefined;
+      } => !!row.date && !!row.page
+    )
     .map((row) => ({
-      date: row.date!,
-      page: row.page!,
+      date: row.date,
+      page: row.page,
       clicks: row.clicks ?? 0,
       impressions: row.impressions ?? 0,
       ctr: row.ctr ?? 0,
