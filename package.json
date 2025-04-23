@@ -10,7 +10,9 @@
     "worker": "ts-node src/queue/worker.ts",
     "build": "tsc",
     "test": "jest",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "init-oauth": "ts-node src/auth/initOAuth.ts",
+    "list-sites": "ts-node src/auth/listSites.ts"
   },
   "dependencies": {
     "@apollo/server": "^4.12.0",
@@ -23,7 +25,8 @@
     "express-basic-auth": "^1.2.0",
     "formidable": "^2.1.1",
     "googleapis": "^132.0.0",
-    "graphql": "^16.10.0"
+    "graphql": "^16.10.0",
+    "inquirer": "^12.5.2"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.4",

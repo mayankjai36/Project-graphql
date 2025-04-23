@@ -1,33 +1,21 @@
-import { google } from 'googleapis';
 import fs from 'fs';
-import {
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
-  GOOGLE_REDIRECT_URI,
-  GOOGLE_SCOPE,
-} from '../config/constants';
+import path from 'path';
+import { google } from 'googleapis';
 
-const oauth2Client = new google.auth.OAuth2(
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
-  GOOGLE_REDIRECT_URI
-);
+const CREDENTIALS = {
+  client_id: process.env.GOOGLE_CLIENT_ID!,
+  client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+  redirect_uris: [process.env.GOOGLE_REDIRECT_URI!]
+};
 
-export function getAuthUrl() {
-  return oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: GOOGLE_SCOPE,
-  });
-}
+const TOKEN_PATH = path.join(__dirname, 'tokens.json');
 
-export async function handleOAuthCallback(code: string) {
-  const { tokens } = await oauth2Client.getToken(code);
-  oauth2Client.setCredentials(tokens);
-  fs.writeFileSync('tokens.json', JSON.stringify(tokens));
-}
+export function getOAuthClient() {
+  const { client_id, client_secret, redirect_uris } = CREDENTIALS;
+  const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
 
-export function loadClient() {
-  const tokens = JSON.parse(fs.readFileSync('tokens.json', 'utf8'));
-  oauth2Client.setCredentials(tokens);
-  return google.webmasters({ version: 'v3', auth: oauth2Client });
+  const token = JSON.parse(fs.readFileSync(TOKEN_PATH, 'utf8'));
+  oAuth2Client.setCredentials(token);
+
+  return oAuth2Client;
 }
