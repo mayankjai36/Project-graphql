@@ -1,27 +1,33 @@
-import prisma from '../db';
+// src/graphql/resolvers.ts
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function metricsSummary(_: any, args: { startDate: string; endDate: string }) {
+  const data = await prisma.searchMetric.findMany({
+    where: {
+      date: {
+        gte: new Date(args.startDate),
+        lte: new Date(args.endDate),
+      },
+    },
+  });
+
+  const sumClicks = data.reduce((sum, row) => sum + row.clicks, 0);
+  const sumImpressions = data.reduce((sum, row) => sum + row.impressions, 0);
+  const avgCtr = data.reduce((sum, row) => sum + row.ctr, 0) / data.length || 0;
+  const avgPosition = data.reduce((sum, row) => sum + row.position, 0) / data.length || 0;
+
+  return {
+    sumClicks,
+    sumImpressions,
+    avgCtr,
+    avgPosition,
+  };
+}
 
 export const resolvers = {
   Query: {
-    metricsSummary: async (
-      _: any,
-      args: { startDate: string; endDate: string }
-    ) => {
-      const result = await prisma.searchMetric.aggregate({
-        _sum: { clicks: true, impressions: true },
-        _avg: { ctr: true, position: true },
-        where: {
-          date: {
-            gte: new Date(args.startDate),
-            lte: new Date(args.endDate),
-          },
-        },
-      });
-      return {
-        sumClicks: result._sum.clicks || 0,
-        sumImpressions: result._sum.impressions || 0,
-        avgCtr: result._avg.ctr || 0,
-        avgPosition: result._avg.position || 0,
-      };
-    },
+    metricsSummary,
   },
 };
